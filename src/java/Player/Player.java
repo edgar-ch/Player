@@ -36,16 +36,11 @@ public class Player extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet Player</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet Player at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+            List<Song> selected_songs;
+            selected_songs = getSongsFromDB();
+            Gson gson = new Gson();
+            String songs_json = gson.toJson(selected_songs);
+            out.println(songs_json);
         }
     }
 
@@ -88,40 +83,36 @@ public class Player extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 
-    protected List<Song> getSongsFromDB() throws SQLException {
+    protected List<Song> getSongsFromDB() {
         // Database info
         final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
         final String DB_URL="jdbc:mysql://localhost:3306/music";
         // For login
         final String USER = "root";
-        final String PASS = "gn_28121904";
+        final String PASSW = "28121904";
         Connection conn = null;
         Statement stmt = null;
         List<Song> songs_list = new ArrayList();
-
+      
         try {
-            Class.forName(JDBC_DRIVER);
+            Class.forName(JDBC_DRIVER).newInstance();
+            String query = "SELECT * FROM songs";
+            conn = DriverManager.getConnection(DB_URL, USER, PASSW);
+            stmt = conn.prepareStatement(query);
             
-            conn = DriverManager.getConnection(DB_URL, USER, PASS);
-            stmt = conn.createStatement();
-            
-            String query = "SELECT * from songs";
             ResultSet res = stmt.executeQuery(query);
-            
-            //Gson gson_fin = new Gson();
-            //List<Song> songs_list = new ArrayList();
             
             while (res.next()) {
                 Song curr = new Song();
-                //Gson gson_curr = new Gson();
-                
                 curr.id = res.getInt("Id");
                 curr.album = res.getString("Album");
                 curr.name = res.getString("Name");
                 curr.perf = res.getString("Perf");
                 curr.path = res.getString("Path");
                 
-                //songs_list.add((String) gson_curr.toJson(curr));
+                //log("id:"+curr.id);
+                //log("name:"+curr.name);
+                
                 songs_list.add(curr);
             }
             
@@ -129,20 +120,21 @@ public class Player extends HttpServlet {
             stmt.close();
             conn.close();
         } catch(SQLException se) {
-            se.printStackTrace();
+            log(se.getMessage());
         } catch(Exception e) {
-            e.printStackTrace();
+            log(e.getMessage());
         } finally {
             try {
                 if (stmt != null)
                     stmt.close();
             } catch(SQLException se2) {
+                log(se2.getMessage());
             }
             try {
                 if (conn != null)
                     conn.close();
             } catch(SQLException se) {
-                se.printStackTrace();
+                log(se.getMessage());
             }
         }
         
