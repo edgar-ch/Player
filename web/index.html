@@ -1,16 +1,234 @@
+
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<html>
-    <head>
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Метеостанция EdTech</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+	<nav class="navbar navbar-inverse" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">EdTech</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Главная</a></li>
+        <li class="dropdown">
+          <a href="https://github.com/edgar-ch/mstation" class="dropdown-toggle" data-toggle="dropdown">Скачать<b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="https://github.com/edgar-ch/mstation/blob/master/MStation/MStation.ino">Скетч Arduino</a></li>
+            <li><a href="https://github.com/edgar-ch/mstation/blob/master/mstation_serv.py">Код на Python</a></li>
+          </ul>
+        </li>
+        <li><a href="develop.html">Разработка</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="about.html">Об авторе</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-9 main"><!-- main -->
+                    <table class="table" id="song_table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Album</th>
+                                <th>Performer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="songs">
+                            
+                        </tbody>
+                    </table>
+			<script type="text/javascript">
+				function cvsFileName() {
+					var date = new Date();
+					return date.getFullYear()+'-'+getCurrMonth(date)+'-'+getCurrDate(date)+'.cvs';
+				}
+
+				function getDateStr(date) {
+					return date.getFullYear()+'-'+getCurrMonth(date)+'-'+getCurrDate(date)+' '+getCurrHour(date)+':'+getCurrMin(date);
+				}
+
+				function getDateQuery() {
+					var date = new Date('2014-09-15');
+					var date_query = {};
+
+					date_query.date2 = getDateStr(date);
+					date.setDate(date.getDate() - 6);
+					date_query.date1 = getDateStr(date);
+
+					return date_query;
+				}
+
+				$('.btn').button();
+
+				var data, graph, graphCreated = 0;
+
+				$('#song_table').ready(requestSongList()); // draw graph
+				//$('#stat').ready(requestStat()); // update stat
+
+				function requestSongList() {
+					$.getJSON("Player", function(data) {
+                                                    var items = [];
+                                                    $.each(data, function(data) {
+                                                        //var item_json = $.parseJSON(this);
+                                                        //console.log(this.id);
+                                                        //console.log(this.name);
+                                                        items.push("<tr><td>")
+                                                    });
+                                                });
+				}
+                                /*
+				function requestStat() {
+					$.ajax({
+						url: 'get_stat.php',
+						type: 'GET',
+						data: getDateQuery(),
+						success: function (d, r, xhr) {
+							var stat = JSON.parse(xhr.responseText);
+
+							$('#min_t').text(stat.temp_min);
+							$('#min_date').text(stat.date_min);
+							$('#max_t').text(stat.temp_max);
+							$('#max_date').text(stat.date_max);
+						}
+					})
+					.always(function () {
+						$('#upd-stat').button('reset');
+					});
+				}
+                                */
+				function drawGraph() {
+					graph = new Dygraph(
+						document.getElementById("graph"),
+						data,
+						{
+							labels: [ "Дата", "Температура", "Температура (DHT11)", "Влажность"],
+							visibility: [true, false, true],
+							legend: "always",
+							labelsDiv: document.getElementById('graph_legend')
+						}
+					);
+					graphCreated = 1;
+				}
+
+				function updateGraphData() {
+					graph.updateOptions( { 'file': data } );
+				}
+
+				function updateLastBlock() {
+					$('#temp_p').text(function () {
+						return graph.getValue(graph.numRows() - 1, 1).toString();
+					});
+
+					$('#humid_p').text(function () {
+						return graph.getValue(graph.numRows() - 1, 3).toString();
+					});
+
+					$('#upd_p').text(function () {
+						return getDateStr(new Date(graph.getValue(graph.numRows() - 1, 0)));
+					});
+				}
+
+				function getCurrMonth(date) {
+					curr_month = '0' + (date.getMonth() + 1);
+					return curr_month.slice(-2);
+				}
+
+				function getCurrDate(date) {
+					curr_date = '0' + date.getDate();
+					return curr_date.slice(-2);
+				}
+
+				function getCurrHour(date) {
+					curr_date = '0' + date.getHours();
+					return curr_date.slice(-2);
+				}
+
+				function getCurrMin(date) {
+					curr_date = '0' + date.getMinutes();
+					return curr_date.slice(-2);
+				}
+			</script>
+		</div><!-- main end -->
+		<div class="col-md-3"><!-- Last data begin -->
+			<div class="panel panel-primary">
+				<div class="panel-heading">Последние данные</div>
+				<div class="panel-body">
+					<p>
+					<abbr title="Температура (DS18B20+)">Темп:</abbr><span class="lead">&nbsp;<span id="temp_p">--.--</span> &deg;C</span><br>
+					<abbr title="Влажность (DHT11)">Влажн:</abbr><span class="lead">&nbsp;<span id="humid_p">--</span> %</span><br>
+					Обновлено: <br>
+					<span id="upd_p">-------- --:--</span>
+					</p>
+					<div class="text-center">
+						<button type="button" class="btn btn-primary btn-xs" id="upd-last" data-loading-text="Загрузка...">Обновить</button>
+					</div>
+					<script type="text/javascript">
+						$('#upd-last,#update-graph').click(function () {
+							var btn = $(this);
+							btn.button('loading');
+							requestData();
+						});
+					</script>
+				</div>
+			</div>
+			<div class="panel panel-default" id="stat">
+				<div class="panel-heading">Статистика (за сутки)</div>
+				<div class="panel-body">
+					<p>
+					<abbr title="Минимальная температура">Min Темп:</abbr><span class="lead">&nbsp;<span id="min_t">--.--</span> &deg;C</span><br>
+					Время: <span id="min_date">-------- --:--</span><br>
+					<abbr title="Максимальная температура">Max Темп:</abbr><span class="lead">&nbsp;<span id="max_t">--.--</span> &deg;C</span><br>
+					Время: <span id="max_date">-------- --:--</span><br>
+					</p>
+					<div class="text-center">
+						<button type="button" class="btn btn-default btn-xs" id="upd-stat" data-loading-text="Загрузка...">Обновить</button>
+					</div>
+					<script type="text/javascript">
+						$('#upd-stat').click(function () {
+							var btn = $(this);
+							btn.button('loading');
+							requestStat();
+						});
+					</script>
+				</div>
+			</div>
+		</div><!-- Last data end -->
+	</div>
+	<div class="footer"></div>
+</div>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <!--<script src="js/bootstrap.min.js"></script>-->
+  </body>
 </html>
