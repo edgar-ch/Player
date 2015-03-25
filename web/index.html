@@ -1,17 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Метеостанция EdTech</title>
+    <title>Player</title>
 
     <!-- Bootstrap -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -31,21 +30,13 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">EdTech</a>
+      <a class="navbar-brand" href="#">Player</a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
         <li class="active"><a href="#">Главная</a></li>
-        <li class="dropdown">
-          <a href="https://github.com/edgar-ch/mstation" class="dropdown-toggle" data-toggle="dropdown">Скачать<b class="caret"></b></a>
-          <ul class="dropdown-menu">
-            <li><a href="https://github.com/edgar-ch/mstation/blob/master/MStation/MStation.ino">Скетч Arduino</a></li>
-            <li><a href="https://github.com/edgar-ch/mstation/blob/master/mstation_serv.py">Код на Python</a></li>
-          </ul>
-        </li>
-        <li><a href="develop.html">Разработка</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a href="about.html">Об авторе</a></li>
@@ -55,48 +46,26 @@
 </nav>
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-md-9 main"><!-- main -->
+            <div class="col-md-1"></div>
+		<div class="col-md-10"><!-- main -->
                     <table class="table" id="song_table">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Name</th>
-                                <th>Album</th>
-                                <th>Performer</th>
+                                <th>Название</th>
+                                <th>Альбом</th>
+                                <th>Исполнитель</th>
                             </tr>
                         </thead>
                         <tbody id="songs">
-                            
                         </tbody>
                     </table>
-			<script type="text/javascript">
-				function cvsFileName() {
-					var date = new Date();
-					return date.getFullYear()+'-'+getCurrMonth(date)+'-'+getCurrDate(date)+'.cvs';
-				}
-
-				function getDateStr(date) {
-					return date.getFullYear()+'-'+getCurrMonth(date)+'-'+getCurrDate(date)+' '+getCurrHour(date)+':'+getCurrMin(date);
-				}
-
-				function getDateQuery() {
-					var date = new Date('2014-09-15');
-					var date_query = {};
-
-					date_query.date2 = getDateStr(date);
-					date.setDate(date.getDate() - 6);
-					date_query.date1 = getDateStr(date);
-
-					return date_query;
-				}
+                    <script type="text/javascript">
 
 				$('.btn').button();
 
-				var data, graph, graphCreated = 0;
-
-				$('#song_table').ready(requestSongList()); // draw graph
-				//$('#stat').ready(requestStat()); // update stat
-
+				$('#song_table').ready(requestSongList()); // generate table
+                                
 				function requestSongList() {
 					$.getJSON("Player", function(data) {
                                                     var items = [];
@@ -104,84 +73,16 @@
                                                         //var item_json = $.parseJSON(this);
                                                         //console.log(this.id);
                                                         //console.log(this.name);
-                                                        items.push("<tr><td>")
+                                                        items.push("<tr><td>"+this.id+"</td><td>"+this.name+"</td><td>"+this.album+"</td><td>"+this.perf+"</td></tr>");
                                                     });
+                                                    $("#song_table").append(items.join(""));
                                                 });
 				}
-                                /*
-				function requestStat() {
-					$.ajax({
-						url: 'get_stat.php',
-						type: 'GET',
-						data: getDateQuery(),
-						success: function (d, r, xhr) {
-							var stat = JSON.parse(xhr.responseText);
-
-							$('#min_t').text(stat.temp_min);
-							$('#min_date').text(stat.date_min);
-							$('#max_t').text(stat.temp_max);
-							$('#max_date').text(stat.date_max);
-						}
-					})
-					.always(function () {
-						$('#upd-stat').button('reset');
-					});
-				}
-                                */
-				function drawGraph() {
-					graph = new Dygraph(
-						document.getElementById("graph"),
-						data,
-						{
-							labels: [ "Дата", "Температура", "Температура (DHT11)", "Влажность"],
-							visibility: [true, false, true],
-							legend: "always",
-							labelsDiv: document.getElementById('graph_legend')
-						}
-					);
-					graphCreated = 1;
-				}
-
-				function updateGraphData() {
-					graph.updateOptions( { 'file': data } );
-				}
-
-				function updateLastBlock() {
-					$('#temp_p').text(function () {
-						return graph.getValue(graph.numRows() - 1, 1).toString();
-					});
-
-					$('#humid_p').text(function () {
-						return graph.getValue(graph.numRows() - 1, 3).toString();
-					});
-
-					$('#upd_p').text(function () {
-						return getDateStr(new Date(graph.getValue(graph.numRows() - 1, 0)));
-					});
-				}
-
-				function getCurrMonth(date) {
-					curr_month = '0' + (date.getMonth() + 1);
-					return curr_month.slice(-2);
-				}
-
-				function getCurrDate(date) {
-					curr_date = '0' + date.getDate();
-					return curr_date.slice(-2);
-				}
-
-				function getCurrHour(date) {
-					curr_date = '0' + date.getHours();
-					return curr_date.slice(-2);
-				}
-
-				function getCurrMin(date) {
-					curr_date = '0' + date.getMinutes();
-					return curr_date.slice(-2);
-				}
 			</script>
+                        <div class="col-md-1"></div>
 		</div><!-- main end -->
-		<div class="col-md-3"><!-- Last data begin -->
+                <!-- Last data begin -->
+		<!-- <div class="col-md-3">
 			<div class="panel panel-primary">
 				<div class="panel-heading">Последние данные</div>
 				<div class="panel-body">
@@ -224,7 +125,8 @@
 					</script>
 				</div>
 			</div>
-		</div><!-- Last data end -->
+		</div>-->
+                <!-- Last data end -->
 	</div>
 	<div class="footer"></div>
 </div>

@@ -14,5 +14,9 @@ public class Song {
     public String name;
     public String album;
     public String perf;
-    public String path;
+    private String path;
+    
+    public String getPath() {
+        return this.path;
+    }
 }

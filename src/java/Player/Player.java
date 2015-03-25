@@ -5,14 +5,18 @@
  */
 package Player;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.*;
 import com.google.gson.*;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -32,9 +36,9 @@ public class Player extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processSongListRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
+        response.setContentType("text/json;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             List<Song> selected_songs;
             selected_songs = getSongsFromDB();
@@ -42,6 +46,40 @@ public class Player extends HttpServlet {
             String songs_json = gson.toJson(selected_songs);
             out.println(songs_json);
         }
+    }
+    
+    protected void processFileRequest(String id, HttpServletResponse response)
+            throws ServletException, IOException {
+        String path = getSongPath(id);
+        String filePath = getServletContext().getRealPath("/"+path);
+        log(filePath);
+        File downloadFile = new File(filePath);
+        FileInputStream inStream = new FileInputStream(downloadFile);
+        
+        ServletContext context = getServletContext();
+        
+        String mimeType = context.getMimeType(filePath);
+        if (mimeType == null) {
+            mimeType = "application/octet-stream";
+        }
+        
+        response.setContentType(mimeType);
+        response.setContentLength((int) downloadFile.length());
+        
+        String headerValue = String.format("inline; filename=\"%s\"", 
+                downloadFile.getName());
+        response.setHeader("Content-Disposition", headerValue);
+        
+        OutputStream outStream = response.getOutputStream();
+        byte[] buffer = new byte[4096];
+        int bytesRead = -1;
+        
+        while ((bytesRead = inStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, bytesRead);
+        }
+        
+        inStream.close();
+        outStream.close();
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -56,7 +94,14 @@ public class Player extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        //String filePath = getServletContext().getRealPath("");
+        //log(filePath);
+        if (request.getParameter("id") != null) {
+            String id = request.getParameter("id");
+            processFileRequest(id, response);
+        } else {
+            processSongListRequest(request, response);
+        }
     }
 
     /**
@@ -70,7 +115,7 @@ public class Player extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        processSongListRequest(request, response);
     }
 
     /**
@@ -82,24 +127,37 @@ public class Player extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
-
-    protected List<Song> getSongsFromDB() {
+    
+    protected Connection connectToDB() {
         // Database info
         final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
         final String DB_URL="jdbc:mysql://localhost:3306/music";
         // For login
         final String USER = "root";
-        final String PASSW = "28121904";
+        final String PASSW = "gn_28121904";
+        
         Connection conn = null;
-        Statement stmt = null;
-        List<Song> songs_list = new ArrayList();
-      
+        
         try {
             Class.forName(JDBC_DRIVER).newInstance();
-            String query = "SELECT * FROM songs";
             conn = DriverManager.getConnection(DB_URL, USER, PASSW);
+        } catch(SQLException se) {
+            log(se.getMessage());
+        } catch(Exception ex) {
+            log(ex.getMessage());
+        }
+        
+        return conn;
+    }
+
+    protected List<Song> getSongsFromDB() {
+        Statement stmt = null;
+        List<Song> songs_list = new ArrayList();
+        String query = "SELECT Id, Album, Name, Perf FROM songs";
+        
+        Connection conn = connectToDB();
+        try {
             stmt = conn.prepareStatement(query);
-            
             ResultSet res = stmt.executeQuery(query);
             
             while (res.next()) {
@@ -108,17 +166,11 @@ public class Player extends HttpServlet {
                 curr.album = res.getString("Album");
                 curr.name = res.getString("Name");
                 curr.perf = res.getString("Perf");
-                curr.path = res.getString("Path");
-                
-                //log("id:"+curr.id);
-                //log("name:"+curr.name);
                 
                 songs_list.add(curr);
             }
             
             res.close();
-            stmt.close();
-            conn.close();
         } catch(SQLException se) {
             log(se.getMessage());
         } catch(Exception e) {
@@ -139,5 +191,39 @@ public class Player extends HttpServlet {
         }
         
         return songs_list;
+    }
+    
+    protected String getSongPath(String id) {
+        Connection conn = connectToDB();
+        Statement stmt = null;
+        String query = "SELECT Path FROM songs WHERE Id="+id;
+        String path = null;
+        
+        try {
+            stmt = conn.prepareStatement(query);
+            ResultSet res = stmt.executeQuery(query);
+            
+            if (res.next())
+                path = res.getString("Path");
+            
+            res.close();
+        } catch(SQLException se) {
+            log(se.getMessage());
+        } finally {
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch(SQLException se2) {
+                log(se2.getMessage());
+            }
+            try {
+                if (conn != null)
+                    conn.close();
+            } catch(SQLException se) {
+                log(se.getMessage());
+            }
+        }
+        
+        return path;
     }
 }

@@ -1,6 +1,7 @@
 #ant specific
 dist/
 build/
+libs/
 
 #netbeans specific
 core
