@@ -10,13 +10,13 @@ package Player;
  * @author edgar
  */
 public class Song {
-    public int id;
-    public String name;
-    public String album;
-    public String perf;
-    private String path;
-    
-    public String getPath() {
-        return this.path;
-    }
+	public int id;
+	public String name;
+	public String album;
+	public String perf;
+	private String path;
+	
+	public String getPath() {
+		return this.path;
+	}
 }

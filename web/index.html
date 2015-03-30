@@ -1,136 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Player</title>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Player</title>
 
-    <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/custom.css" rel="stylesheet">
+	<!-- Bootstrap -->
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/custom.css" rel="stylesheet">
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
-  <body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	  <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
 	<nav class="navbar navbar-inverse" role="navigation">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="#">Player</a>
-    </div>
-
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Главная</a></li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="about.html">Об авторе</a></li>
-      </ul>
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
-</nav>
-<div class="container-fluid">
-	<div class="row">
-            <div class="col-md-1"></div>
-		<div class="col-md-10"><!-- main -->
-                    <table class="table" id="song_table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Название</th>
-                                <th>Альбом</th>
-                                <th>Исполнитель</th>
-                            </tr>
-                        </thead>
-                        <tbody id="songs">
-                        </tbody>
-                    </table>
-                    <script type="text/javascript">
-
-				$('.btn').button();
-
-				$('#song_table').ready(requestSongList()); // generate table
-                                
-				function requestSongList() {
-					$.getJSON("Player", function(data) {
-                                                    var items = [];
-                                                    $.each(data, function(data) {
-                                                        //var item_json = $.parseJSON(this);
-                                                        //console.log(this.id);
-                                                        //console.log(this.name);
-                                                        items.push("<tr><td>"+this.id+"</td><td>"+this.name+"</td><td>"+this.album+"</td><td>"+this.perf+"</td></tr>");
-                                                    });
-                                                    $("#song_table").append(items.join(""));
-                                                });
-				}
-			</script>
-                        <div class="col-md-1"></div>
-		</div><!-- main end -->
-                <!-- Last data begin -->
-		<!-- <div class="col-md-3">
-			<div class="panel panel-primary">
-				<div class="panel-heading">Последние данные</div>
-				<div class="panel-body">
-					<p>
-					<abbr title="Температура (DS18B20+)">Темп:</abbr><span class="lead">&nbsp;<span id="temp_p">--.--</span> &deg;C</span><br>
-					<abbr title="Влажность (DHT11)">Влажн:</abbr><span class="lead">&nbsp;<span id="humid_p">--</span> %</span><br>
-					Обновлено: <br>
-					<span id="upd_p">-------- --:--</span>
-					</p>
-					<div class="text-center">
-						<button type="button" class="btn btn-primary btn-xs" id="upd-last" data-loading-text="Загрузка...">Обновить</button>
-					</div>
-					<script type="text/javascript">
-						$('#upd-last,#update-graph').click(function () {
-							var btn = $(this);
-							btn.button('loading');
-							requestData();
-						});
-					</script>
-				</div>
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+			  	</button>
+			  	<a class="navbar-brand" href="#">Player</a>
 			</div>
-			<div class="panel panel-default" id="stat">
-				<div class="panel-heading">Статистика (за сутки)</div>
-				<div class="panel-body">
-					<p>
-					<abbr title="Минимальная температура">Min Темп:</abbr><span class="lead">&nbsp;<span id="min_t">--.--</span> &deg;C</span><br>
-					Время: <span id="min_date">-------- --:--</span><br>
-					<abbr title="Максимальная температура">Max Темп:</abbr><span class="lead">&nbsp;<span id="max_t">--.--</span> &deg;C</span><br>
-					Время: <span id="max_date">-------- --:--</span><br>
-					</p>
-					<div class="text-center">
-						<button type="button" class="btn btn-default btn-xs" id="upd-stat" data-loading-text="Загрузка...">Обновить</button>
-					</div>
-					<script type="text/javascript">
-						$('#upd-stat').click(function () {
-							var btn = $(this);
-							btn.button('loading');
-							requestStat();
-						});
-					</script>
+		
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			  	<ul class="nav navbar-nav">
+					<li class="active"><a href="#">Главная</a></li>
+			  	</ul>
+			  	<ul class="nav navbar-nav navbar-right">
+					<li><a href="about.html">Об авторе</a></li>
+			  	</ul>
+			</div><!-- /.navbar-collapse -->
+		</div><!-- /.container-fluid -->
+	</nav>
+	<div class="container-fluid">
+		<div class="row">
+				<div class="col-md-1">
+					<audio id="audioPlayer" src="" preload="none">
+					</audio>
 				</div>
-			</div>
-		</div>-->
-                <!-- Last data end -->
+			<div class="col-md-10"><!-- main -->
+				<table class="table" id="song_table">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Название</th>
+							<th>Альбом</th>
+							<th>Исполнитель</th>
+						</tr>
+					</thead>
+					<tbody id="songs">
+					</tbody>
+				</table>
+				<script type="text/javascript">
+					var nowPlay = false;
+					var currPlay = -1;
+							
+					$('#song_table').ready(requestSongList()); // generate table
+					$('#song_table').children().on('click', 'span[id]', function() {
+						var id = $(this).attr('id');
+						playSong(id);
+					});
+							
+					function requestSongList() {
+						$.getJSON("Player", function(data) {
+							var items = [];
+							$.each(data, function() {
+								items.push("<tr><td><span class=\"glyphicon glyphicon-play\" id=\""+this.id+"\"></td>");
+								items.push("<td>"+this.name+"</td><td>"+this.album+"</td><td>"+this.perf+"</td></tr>");
+							});
+							$("#song_table").append(items.join(""));
+							});
+					}
+							
+					function playSong(id) {
+						var player = $('#audioPlayer');
+						if (nowPlay)
+						{
+							player.trigger('pause');
+							$('span#'+currPlay).removeClass("glyphicon-pause").addClass("glyphicon-play");
+							nowPlay = false;
+						}
+						if (id !== currPlay) {
+							$("span#"+id).removeClass("glyphicon-play").addClass("glyphicon-pause");
+							player.attr('src', 'Player?id='+id);
+							currPlay = id;
+							nowPlay = true;
+							player.trigger('play');
+						}
+						else
+							currPlay = -1;
+						}
+				</script>
+			</div>        
+			<div class="col-md-1"></div>
+			<!-- main end -->
+		</div>
+		<div class="footer"></div>
 	</div>
-	<div class="footer"></div>
-</div>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <!--<script src="js/bootstrap.min.js"></script>-->
-  </body>
+	<!-- Include all compiled plugins (below), or include individual files as needed -->
+	<!--<script src="js/bootstrap.min.js"></script>-->
+</body>
 </html>
