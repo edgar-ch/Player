@@ -52,9 +52,8 @@ public class Player extends HttpServlet {
             throws ServletException, IOException {
         String path = getSongPath(id);
         String filePath = getServletContext().getRealPath("/"+path);
-        log(filePath);
+        log("File path: " + filePath);
         File downloadFile = new File(filePath);
-        FileInputStream inStream = new FileInputStream(downloadFile);
         
         ServletContext context = getServletContext();
         
@@ -70,16 +69,16 @@ public class Player extends HttpServlet {
                 downloadFile.getName());
         response.setHeader("Content-Disposition", headerValue);
         
-        OutputStream outStream = response.getOutputStream();
         byte[] buffer = new byte[4096];
         int bytesRead = -1;
         
-        while ((bytesRead = inStream.read(buffer)) != -1) {
-            outStream.write(buffer, 0, bytesRead);
+        try (OutputStream outStream = response.getOutputStream()) {
+            try (FileInputStream inStream = new FileInputStream(downloadFile)) {
+                while ((bytesRead = inStream.read(buffer)) != -1) {
+                    outStream.write(buffer, 0, bytesRead);
+                }
+            }
         }
-        
-        inStream.close();
-        outStream.close();
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -158,19 +157,17 @@ public class Player extends HttpServlet {
         Connection conn = connectToDB();
         try {
             stmt = conn.prepareStatement(query);
-            ResultSet res = stmt.executeQuery(query);
-            
-            while (res.next()) {
-                Song curr = new Song();
-                curr.id = res.getInt("Id");
-                curr.album = res.getString("Album");
-                curr.name = res.getString("Name");
-                curr.perf = res.getString("Perf");
+            try (ResultSet res = stmt.executeQuery(query)) {
+                while (res.next()) {
+                    Song curr = new Song();
+                    curr.id = res.getInt("Id");
+                    curr.album = res.getString("Album");
+                    curr.name = res.getString("Name");
+                    curr.perf = res.getString("Perf");
                 
-                songs_list.add(curr);
+                    songs_list.add(curr);
+                }
             }
-            
-            res.close();
         } catch(SQLException se) {
             log(se.getMessage());
         } catch(Exception e) {
@@ -201,12 +198,10 @@ public class Player extends HttpServlet {
         
         try {
             stmt = conn.prepareStatement(query);
-            ResultSet res = stmt.executeQuery(query);
-            
-            if (res.next())
-                path = res.getString("Path");
-            
-            res.close();
+            try (ResultSet res = stmt.executeQuery(query)) {
+                if (res.next())
+                    path = res.getString("Path");
+            }
         } catch(SQLException se) {
             log(se.getMessage());
         } finally {
