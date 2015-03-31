@@ -72,6 +72,12 @@
 					};
 					
 					$('#song_table').ready(requestSongList()); // generate table
+					
+					$('#audioPlayer').on('pause', function() {
+						$('tr.info').toggleClass('info');
+						$('td > span.glyphicon-pause').removeClass('glyphicon-pause').addClass('glyphicon-play');
+					});
+					
 					$('#song_table').children().on('click', 'span[id]', function() {
 						var id = $(this).attr('id');
 						playSong(id);
@@ -93,19 +99,27 @@
 						if (nowPlay)
 						{
 							player.trigger('pause');
-							$('span#'+currPlay).removeClass("glyphicon-pause").addClass("glyphicon-play");
 							nowPlay = false;
+							if (id === currPlay)
+								return;
 						}
 						if (id !== currPlay) {
 							$("span#"+id).removeClass("glyphicon-play").addClass("glyphicon-pause");
+							$('span#'+id).closest('tr').toggleClass('info');
 							player.attr('src', 'Player?id='+id);
 							currPlay = id;
 							nowPlay = true;
 							player.trigger('play');
+							return;
 						}
-						else
-							currPlay = -1;
+						if ((id === currPlay) && (!nowPlay))
+						{
+							$("span#"+id).removeClass("glyphicon-play").addClass("glyphicon-pause");
+							$('span#'+id).closest('tr').toggleClass('info');
+							nowPlay = true;
+							player.trigger('play');
 						}
+					}
 				</script>
 				<nav>
 					<ul class="pager">
