@@ -66,15 +66,19 @@
 				<script type="text/javascript">
 					var nowPlay = false;
 					var currPlay = -1;
-							
+					var songList = {
+						begin: 0,
+						amount: 10
+					};
+					
 					$('#song_table').ready(requestSongList()); // generate table
 					$('#song_table').children().on('click', 'span[id]', function() {
 						var id = $(this).attr('id');
 						playSong(id);
 					});
-							
+					
 					function requestSongList() {
-						$.getJSON("Player", function(data) {
+						$.getJSON("Player", songList, function(data) {
 							var items = [];
 							$.each(data, function() {
 								items.push("<tr><td><span class=\"glyphicon glyphicon-play\" id=\""+this.id+"\"></td>");
@@ -103,11 +107,38 @@
 							currPlay = -1;
 						}
 				</script>
-			</div>        
+				<nav>
+					<ul class="pager">
+						<li class="previous disabled" id="backward"><a href="#"><span aria-hidden="true">&larr;</span> Назад</a></li>
+						<li class="next" id="forward"><a href="#">Вперед <span aria-hidden="true">&rarr;</span></a></li>
+					</ul>
+				</nav>
+				<script type="text/javascript">
+					function reRequestSongs() {
+						$('#songs').children().empty();
+						requestSongList();
+					}
+					
+					$("li[id='forward']").on('click', function() {
+						songList.begin += songList.amount;
+						$('li.disabled').removeClass('disabled');
+						reRequestSongs();
+					});
+					
+					$("li[id='backward']").on('click', function() {
+						if (songList.begin !== 0)
+						{
+							songList.begin -= songList.amount;
+							if (songList.begin === 0)
+								$("li[id='backward']").addClass('disabled');
+							reRequestSongs();
+						}
+					});
+				</script>
+			</div>
 			<div class="col-md-1"></div>
 			<!-- main end -->
 		</div>
-		<div class="footer"></div>
 	</div>
 	<!-- Include all compiled plugins (below), or include individual files as needed -->
 	<!--<script src="js/bootstrap.min.js"></script>-->

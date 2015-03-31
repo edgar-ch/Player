@@ -41,7 +41,15 @@ public class Player extends HttpServlet {
 		response.setContentType("text/json;charset=UTF-8");
 		try (PrintWriter out = response.getWriter()) {
 			List<Song> selected_songs;
-			selected_songs = getSongsFromDB();
+			String param;
+			int begin = 0, amount = 10;
+			if ((param = request.getParameter("begin")) != null) {
+				begin = Integer.parseInt(param, 10);
+			}
+			if ((param = request.getParameter("amount")) != null) {
+				amount = Integer.parseInt(param, 10);
+			}
+			selected_songs = getSongsFromDB(begin, amount);
 			Gson gson = new Gson();
 			String songs_json = gson.toJson(selected_songs);
 			out.println(songs_json);
@@ -149,10 +157,11 @@ public class Player extends HttpServlet {
 		return conn;
 	}
 
-	protected List<Song> getSongsFromDB() {
+	protected List<Song> getSongsFromDB(int begin, int amount) {
 		Statement stmt = null;
 		List<Song> songs_list = new ArrayList();
-		String query = "SELECT Id, Album, Name, Perf FROM songs";
+		String query = "SELECT Id, Album, Name, Perf FROM songs LIMIT "
+			+ begin + "," + amount;
 		
 		Connection conn = connectToDB();
 		try {
