@@ -44,10 +44,22 @@ public class Player extends HttpServlet {
 			String param;
 			int begin = 0, amount = 10;
 			if ((param = request.getParameter("begin")) != null) {
-				begin = Integer.parseInt(param, 10);
+				try {
+					begin = Integer.parseInt(param, 10);
+				}
+				catch (NumberFormatException nfe) {
+					out.println("Illegal value of begin: " + begin);
+					log(nfe.toString());
+				}
 			}
 			if ((param = request.getParameter("amount")) != null) {
-				amount = Integer.parseInt(param, 10);
+				try {
+					amount = Integer.parseInt(param, 10);
+				}
+				catch (NumberFormatException nfe) {
+					out.println("Illegal value of amount: " + amount);
+					log(nfe.toString());
+				}
 			}
 			selected_songs = getSongsFromDB(begin, amount);
 			Gson gson = new Gson();
@@ -56,7 +68,7 @@ public class Player extends HttpServlet {
 		}
 	}
 	
-	protected void processFileRequest(String id, HttpServletResponse response)
+	protected void processFileRequest(int id, HttpServletResponse response)
 			throws ServletException, IOException {
 		String path = getSongPath(id);
 		String filePath = getServletContext().getRealPath("/"+path);
@@ -101,11 +113,17 @@ public class Player extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		//String filePath = getServletContext().getRealPath("");
-		//log(filePath);
 		if (request.getParameter("id") != null) {
 			String id = request.getParameter("id");
-			processFileRequest(id, response);
+			try {
+				int id_int = Integer.parseInt(id, 10);
+				processFileRequest(id_int, response);
+			}
+			catch (NumberFormatException nfe) {
+				PrintWriter out = response.getWriter();
+				out.println("Illegal value of id: " + id);
+				log(nfe.toString());
+			}
 		} else {
 			processSongListRequest(request, response);
 		}
@@ -199,7 +217,7 @@ public class Player extends HttpServlet {
 		return songs_list;
 	}
 	
-	protected String getSongPath(String id) {
+	protected String getSongPath(int id) {
 		Connection conn = connectToDB();
 		Statement stmt = null;
 		String query = "SELECT Path FROM songs WHERE Id="+id;
