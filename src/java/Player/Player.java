@@ -71,9 +71,19 @@ public class Player extends HttpServlet {
 	protected void processFileRequest(int id, HttpServletResponse response)
 			throws ServletException, IOException {
 		String path = getSongPath(id);
+		if (path == null) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND,
+					"Song not found");
+			return;
+		}
 		String filePath = getServletContext().getRealPath("/"+path);
 		log("File path: " + filePath);
 		File downloadFile = new File(filePath);
+		if (!downloadFile.canRead()) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+					"Error reading file on server");
+			return;
+		}
 		
 		ServletContext context = getServletContext();
 		
