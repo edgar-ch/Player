@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -163,19 +166,39 @@ public class Player extends HttpServlet {
 		return "Short description";
 	}// </editor-fold>
 	
+	protected Settings readConf(String path) {
+		Settings db_settings = new Settings();
+		Gson json_file = new Gson();
+		
+		try {
+			BufferedReader conf_file = new BufferedReader(
+				new FileReader(path));
+			db_settings = json_file.fromJson(conf_file, Settings.class);
+		}
+		catch (FileNotFoundException ex) {
+			log(ex.getMessage());
+		}
+		
+		return db_settings;
+	}
+	
 	protected Connection connectToDB() {
 		// Database info
-		final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-		final String DB_URL="jdbc:mysql://localhost:3306/music";
-		// For login
-		final String USER = "root";
-		final String PASSW = "gn_28121904";
+		final String CONF_FNAME = "/db_conf.json";
+		Settings conf;
+		String confPath = getServletContext().getRealPath(CONF_FNAME);
+		//log(confPath);
+		conf = readConf(confPath);
+		//log(conf.toString());
 		
 		Connection conn = null;
 		
 		try {
-			Class.forName(JDBC_DRIVER).newInstance();
-			conn = DriverManager.getConnection(DB_URL, USER, PASSW);
+			Class.forName(conf.getJdbcDriver()).newInstance();
+			conn = DriverManager.getConnection(
+					conf.getDBUrl(),
+					conf.getUser(),
+					conf.getPassw());
 		} catch(SQLException se) {
 			log(se.getMessage());
 		} catch(Exception ex) {
